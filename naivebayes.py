@@ -35,48 +35,33 @@ def generate_sets():
     testing = []
     count_c = {'training': [0, 0], 'validating': [0, 0], 'testing': [0, 0]}
     expected = {'training': [], 'validating': [], 'testing': []}
-    # word_count = {'training': {'real': all_words, 'fake': all_words},
-    #               'validating': {'real': all_words, 'fake': all_words},
-    #               'testing': {'real': all_words, 'fake': all_words}}
     random.shuffle(all_headlines)
     index = 0
     for line in all_headlines:
         if index < len(all_headlines) * 0.7:
             if line in real_lines:
                 count_c['training'][0] += 1.0
-                # for word in line.strip().split():
-                #     word_count['training']['real'][word] += 1.0
                 expected['training'].append(1)
             if line in fake_lines:
                 count_c['training'][1] += 1.0
-                # for word in line.strip().split():
-                #     word_count['training']['fake'][word] += 1.0
                 expected['training'].append(0)
             training.append(line)
 
         if len(all_headlines) * 0.7 < index < len(all_headlines) * 0.15 + len(all_headlines) * 0.7:
             if line in real_lines:
                 count_c['validating'][0] += 1.0
-                # for word in line.strip().split():
-                #     word_count['validating']['real'][word] += 1.0
                 expected['validating'].append(1)
             if line in fake_lines:
                 count_c['validating'][1] += 1.0
-                # for word in line.strip().split():
-                #     word_count['validating']['fake'][word] += 1.0
                 expected['validating'].append(0)
             validating.append(line)
 
         if len(all_headlines) * 0.15 + len(all_headlines) * 0.7 < index < len(all_headlines):
             if line in real_lines:
                 count_c['testing'][0] += 1.0
-                # for word in line.strip().split():
-                #     word_count['testing']['real'][word] += 1.0
                 expected['testing'].append(1)
             if line in fake_lines:
                 count_c['testing'][1] += 1.0
-                # for word in line.strip().split():
-                #     word_count['testing']['fake'][word] += 1.0
                 expected['testing'].append(0)
             testing.append(line)
 

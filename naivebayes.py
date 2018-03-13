@@ -29,7 +29,6 @@ def get_words(all_headlines):
 
 def generate_sets():
     all_headlines, real_lines, fake_lines = get_lines()
-    all_words = get_words(all_headlines)
     training = []
     validating = []
     testing = []
@@ -67,7 +66,7 @@ def generate_sets():
 
         index += 1
 
-    return training, validating, testing, count_c, all_words, expected
+    return training, validating, testing, count_c, expected
 
 
 def top_words():
@@ -84,12 +83,13 @@ def top_words():
 
 
 def train(setname, m, p):
-    training, validating, testing, count_c, all_words, expected = generate_sets()
+    training, validating, testing, count_c, expected = generate_sets()
+    all_words = get_words(validating)
     words = all_words.copy()
     results = []
     for line in validating:
         for word in line.strip().split():
-            words[word] += 1.0
+            words[word] = 1.0
         MAP = []
         pi = 0
         for w, t in words.items():
@@ -111,4 +111,4 @@ if __name__ == '__main__':
     random.seed(0)
     print(top_words())
     for i in np.arange(2.0,3.0,0.05):
-        print(train('validating', 100., i))
+        print(train('validating', 10., i))

@@ -2,6 +2,8 @@ import sklearn
 import numpy as np
 import random
 
+set_order = {'training': 0, 'validating': 1, 'testing': 2, 'all': 3}
+
 
 def get_lines():
     real = open('clean_real.txt', 'r')
@@ -27,122 +29,112 @@ def get_words(sets):
     return all_words
 
 
-def generate_sets():
-    all_headlines, real_lines, fake_lines = get_lines()
-    training = []
-    validating = []
-    testing = []
-    expected = {'training': [], 'validating': [], 'testing': [], 'all': []}
-    random.shuffle(all_headlines)
-    index = 0
-    for line in all_headlines:
-        if index < len(all_headlines) * 0.7:
-            if line in real_lines:
-                expected['training'].append(1)
-            if line in fake_lines:
-                expected['training'].append(0)
-            training.append(line)
-
-        if len(all_headlines) * 0.7 < index < len(all_headlines) * 0.15 + len(all_headlines) * 0.7:
-            if line in real_lines:
-                expected['validating'].append(1)
-            if line in fake_lines:
-                expected['validating'].append(0)
-            validating.append(line)
-
-        if len(all_headlines) * 0.15 + len(all_headlines) * 0.7 < index < len(all_headlines):
-            if line in real_lines:
-                expected['testing'].append(1)
-            if line in fake_lines:
-                expected['testing'].append(0)
-            testing.append(line)
-
-        if line in real_lines:
-            expected['all'].append(1)
-        if line in fake_lines:
-            expected['all'].append(0)
-        testing.append(line)
-
-        index += 1
-
-    return training, validating, testing, expected
-
-
-def top_words():
-    all_words = {}
-    all_headlines, real_lines, fake_lines = get_lines()
-    for line in all_headlines:
-        for word in line.strip().split():
-            if word not in all_words:
-                all_words[word] = 1
-            else:
-                all_words[word] += 1
-    words = sorted(all_words, key=all_words.get, reverse=True)[:3]
-    return words
-
-
-def words_count(setname=None):
-    training, validating, testing, expected = generate_sets()
-    sets = []
-    if not setname:
-        setname = 'all'
-        all_headlines, real_lines, fake_lines = get_lines()
-        sets = all_headlines
-    if setname == 'training':
-        sets = training
-    if setname == 'validating':
-        sets = validating
-    if setname == 'testing':
-        sets = testing
+def words_count(sets, expect):
     all_words = get_words(sets)
     for i in range(len(sets)):
         for word in sets[i].strip().split():
-            if expected[setname][i] == 1:
+            if expect[i] == 1:
                 all_words[word]['real'] += 1.0
             else:
                 all_words[word]['fake'] += 1.0
     return all_words
 
 
-def train(setname, m, p):
-    training, validating, testing, expected = generate_sets()
-    sets = []
-    if setname == 'training':
-        sets = training
-    if setname == 'validating':
-        sets = validating
-    if setname == 'testing':
-        sets = testing
-    all_words = {}
-    for line in sets:
-        for word in line.strip().split():
-            if word not in all_words:
-                all_words[word] = 0.0
-    words = all_words.copy()
+def generate_sets():
+    random.seed(0)
+    all_headlines, real_lines, fake_lines = get_lines()
+    training = []
+    validating = []
+    testing = []
+    allset = []
+    expected = [[], [], [], []]
+    random.shuffle(all_headlines)
+    index = 0
+    for line in all_headlines:
+        if index < len(all_headlines) * 0.7:
+            if line in real_lines:
+                expected[0].append(1)
+            if line in fake_lines:
+                expected[0].append(0)
+            training.append(line)
+
+        if len(all_headlines) * 0.7 < index < len(all_headlines) * 0.15 + len(all_headlines) * 0.7:
+            if line in real_lines:
+                expected[1].append(1)
+            if line in fake_lines:
+                expected[1].append(0)
+            validating.append(line)
+
+        if len(all_headlines) * 0.15 + len(all_headlines) * 0.7 < index < len(all_headlines):
+            if line in real_lines:
+                expected[2].append(1)
+            if line in fake_lines:
+                expected[2].append(0)
+            testing.append(line)
+
+        if line in real_lines:
+            expected[3].append(1)
+        if line in fake_lines:
+            expected[3].append(0)
+
+        allset.append(line)
+
+        index += 1
+
+    return training, validating, testing, allset, expected
+
+
+def top_words(sets, expect):
+    all_words = words_count(sets, expect)
+    top = {}
+    for word, c in all_words.items():
+        top[word] = c['real'] + c['fake']
+    words = sorted(top, key=top.get, reverse=True)[:3]
+    return words, all_words
+
+
+def log_prob_words_given_C(line, words_count, pos_count, neg_count, m, k, cls):
+    sumlog = 0
+    word_list = line.strip().split()
+    for word in word_list:
+        if cls == 1:
+            prob_word = np.log((words_count[word]['real'] + m * k) / (pos_count + k))
+        else:
+            prob_word = np.log((words_count[word]['fake'] + m * k) / (neg_count + k))
+        sumlog += prob_word
+    return sumlog
+
+
+def log_prob_C_given_words(line, words_count, pos_count, neg_count, m, k, cls):
+    log_prob_words_cls = log_prob_words_given_C(line, words_count, pos_count, neg_count, m, k, cls)
+    if cls == 1:
+        prob_C = pos_count / (pos_count + neg_count)
+    else:
+        prob_C = neg_count / (neg_count + pos_count)
+    return log_prob_words_cls + np.log(prob_C)
+
+
+def predict(line, words_count, pos_count, neg_count, m, k):
+    prob_pos = log_prob_C_given_words(line, words_count, pos_count, neg_count, m, k, 1)
+    prob_neg = log_prob_C_given_words(line, words_count, pos_count, neg_count, m, k, 0)
+    if prob_pos >= prob_neg:
+        return 1
+    else:
+        return 0
+
+
+def get_performance(sets, expect, m, k):
+    words_c = words_count(sets,expect)
     results = []
     for line in sets:
-        for word in line.strip().split():
-            words[word] = 1.0
-        MAP = []
-        pi = np.log(expected[setname].count(1))
-        for w, t in words.items():
-            pi += np.log((t + m * p) / (expected[setname].count(1) + m))
-        MAP.append(pi)
-        pi = np.log(expected[setname].count(0))
-        for w, t in words.items():
-            pi += np.log((t + m * p) / (expected[setname].count(0) + m))
-        MAP.append(pi)
-        print(MAP)
-        result = np.argmax(MAP)
-        results.append(result)
-        words = all_words.copy()
-    return np.sum(np.array(results) == np.array(expected[setname])) / (len(expected[setname]) * 1.0), m, p
+        results.append(predict(line, words_c, expect.count(1), expect.count(0), m, k))
+    return np.sum(np.array(results) == np.array(expect)) / (len(expect) * 1.0)
 
 
 if __name__ == '__main__':
-    random.seed(0)
-    all_words = words_count()
-    words = top_words()
-    for w in words:
-        print(w, all_words[w])
-    print(train('validating', 10, 0.05))
+    training, validating, testing, allset, expected = generate_sets()
+    topwords, all_words = top_words(allset,expected[3])
+    print(topwords)
+    print(get_performance(validating,expected[1],1.0,0.1))
+    print(get_performance(testing, expected[2], 1.0, 0.1))
+    print(get_performance(training, expected[0], 1.0, 0.1))

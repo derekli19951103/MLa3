@@ -84,8 +84,8 @@ def top_words():
 def words_count(setname=None):
     training, validating, testing, expected = generate_sets()
     sets = []
-    if setname == None:
-        setname='all'
+    if not setname:
+        setname = 'all'
         all_headlines, real_lines, fake_lines = get_lines()
         sets = all_headlines
     if setname == 'training':
@@ -104,7 +104,7 @@ def words_count(setname=None):
     return all_words
 
 
-def train(setname):
+def train(setname, m, p):
     training, validating, testing, expected = generate_sets()
     sets = []
     if setname == 'training':
@@ -120,22 +120,23 @@ def train(setname):
                 all_words[word] = 0.0
     words = all_words.copy()
     results = []
-    for line in validating:
+    for line in sets:
         for word in line.strip().split():
             words[word] = 1.0
         MAP = []
         pi = np.log(expected[setname].count(1))
         for w, t in words.items():
-            pi += np.log((t + 1.0) / (expected[setname].count(1) + 1.0))
+            pi += np.log((t + m * p) / (expected[setname].count(1) + m))
         MAP.append(pi)
         pi = np.log(expected[setname].count(0))
         for w, t in words.items():
-            pi += np.log((t + 1.0) / (expected[setname].count(0) + 1.0))
+            pi += np.log((t + m * p) / (expected[setname].count(0) + m))
         MAP.append(pi)
+        print(MAP)
         result = np.argmax(MAP)
         results.append(result)
         words = all_words.copy()
-    return np.sum(np.array(results) == np.array(expected[setname])) / (len(expected[setname]) * 1.0)
+    return np.sum(np.array(results) == np.array(expected[setname])) / (len(expected[setname]) * 1.0), m, p
 
 
 if __name__ == '__main__':
@@ -143,5 +144,5 @@ if __name__ == '__main__':
     all_words = words_count()
     words = top_words()
     for w in words:
-        print(w,all_words[w])
-    print(train('validating'))
+        print(w, all_words[w])
+    print(train('validating', 10, 0.05))

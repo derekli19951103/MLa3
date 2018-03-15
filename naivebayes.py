@@ -1,6 +1,7 @@
 import sklearn
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 set_order = {'training': 0, 'validating': 1, 'testing': 2, 'all': 3}
 word_pos_neg = {'real': 1, 'fake': 0}
@@ -144,8 +145,8 @@ def train(sets, expect, m, p, expected, training):
 
 
 def find_m_p(sets, expect, expected, training):
-    ms = []
-    ps = []
+    ms = [10.0, 1.0, 0.1]
+    ps = [10.0, 1.0, 0.1]
     params = []
     accuracy = []
     for m in ms:
@@ -179,9 +180,26 @@ if __name__ == '__main__':
         print('appearance in fake:', all_words[w][0])
         print('appearance in real:', all_words[w][1])
         i += 1
+    print("===================part2===================")
+    # find mp
+    para, accu = find_m_p(validating, expected[1], expected, training)
+    x_axis = [i+1 for i in range(len(accu))]
+    plt.plot(x_axis, accu)
+    plt.title('Part 2')
+    plt.xlabel('M and P')
+    plt.ylabel("Performance")
+    plt.savefig("part2.jpg")
+    plt.close("all")
+
+    # print out mp set and its performance
+    for i in range(len(x_axis)):
+        print ("****************************")
+        print ("# of set: ", x_axis[i])
+        print ("M and P: ", para[i])
+        print ("Performance: ", accu[i])
+
     m = 1.0
     p = 0.1
-    print("===================part2===================")
     print('training accuracy:', get_performance(training, expected[0], m, p, expected, training))
     print('validating accuracy:', get_performance(validating, expected[1], m, p, expected, training))
     print('testing accuracy:', get_performance(testing, expected[2], m, p, expected, training))

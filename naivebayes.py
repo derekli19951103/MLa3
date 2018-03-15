@@ -203,3 +203,33 @@ if __name__ == '__main__':
     print('training accuracy:', get_performance(training, expected[0], m, p, expected, training))
     print('validating accuracy:', get_performance(validating, expected[1], m, p, expected, training))
     print('testing accuracy:', get_performance(testing, expected[2], m, p, expected, training))
+
+
+    print ("===================part3===================")
+
+    # P(real) and P(fake)
+    p_real = None
+    p_fake = None
+    num_real = 0
+    num_fake = 0
+    for key in all_words.keys():
+        num_real += all_words[key][1]
+        num_fake += all_words[key][0]
+
+    num_total = num_real + num_fake
+    p_real = num_real / num_total
+    p_fake = 1 - p_real
+
+
+    # 10 presence most predict real
+    # P(real | word) = P(word | real) P(real) / P(word)
+
+
+    # 10 absence most predict real
+    # P(real | not word) = P(not word | real) P(real) / P(word)
+
+    # 10 presence most predict fake
+    # P(fake | word) = P(word | fake) P(fake) / P(word)
+
+    # 10 absence most predict fake
+    # P(fake | not word) = P(not word | fake) P(fake) / P(word)

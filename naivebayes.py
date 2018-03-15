@@ -94,51 +94,94 @@ def top_words(sets, expect):
     return words, all_words
 
 
-def log_prob_words_given_C(line, words_count, pos_count, neg_count, m, p, cls):
-    sumlog = 0
-    word_list = line.strip().split()
-    for word in word_list:
-        if cls == 1:
-            prob_word = np.log((words_count[word][cls] + m * p) / (pos_count + p))
+def get_prob_words_given_C(words_counts, C, num_C, m, p):
+    xi_c = {}
+    for word, count in words_counts.items():
+        xi_c[word] = (min(count[C], num_C) + m * p) / (num_C + m)
+
+    return xi_c
+
+
+def get_log_sums(small_nums):
+    log_sum = 0
+    for small_num in small_nums:
+        log_sum += np.log(small_num)
+    return log_sum
+
+
+def log_prob_of_hl_given_C(xi_c, line):
+    log_prob = np.empty([len(xi_c)])
+    i = 0
+    for word, prob in xi_c.items():
+        if word in line.strip().split():
+            log_prob[i] = prob
         else:
-            prob_word = np.log((words_count[word][cls] + m * p) / (neg_count + p))
-        sumlog += prob_word
-    return sumlog
+            log_prob[i] = 1 - prob
+        i += 1
+
+    return log_prob
 
 
-def log_prob_C_given_words(line, words_count, pos_count, neg_count, m, p, cls):
-    log_prob_words_cls = log_prob_words_given_C(line, words_count, pos_count, neg_count, m, p, cls)
-    if cls == 1:
-        prob_C = pos_count / (pos_count + neg_count)
-    else:
-        prob_C = neg_count / (neg_count + pos_count)
-    return log_prob_words_cls + np.log(prob_C)
+def get_C(preal, pfake, pwordr, pwordf, sets):
+    Cfake = np.array([np.log(pfake) + get_log_sums(log_prob_of_hl_given_C(pwordf, hl)) for hl in sets])
+    Creal = np.array([np.log(preal) + get_log_sums(log_prob_of_hl_given_C(pwordr, hl)) for hl in sets])
+    C = np.vstack((Cfake, Creal))
+    results = np.argmax(C, axis=0)
+    return results
 
 
-def predict(line, words_count, pos_count, neg_count, m, p):
-    prob_pos = log_prob_C_given_words(line, words_count, pos_count, neg_count, m, p, 1)
-    prob_neg = log_prob_C_given_words(line, words_count, pos_count, neg_count, m, p, 0)
-    if prob_pos >= prob_neg:
-        return 1
-    else:
-        return 0
+def train(sets, expect, m, p, expected, training):
+    words_counts = words_count(training, expected[0])
+    num_real_data = expected[0].count(1)
+    num_fake_data = expected[0].count(0)
+    preal = num_real_data / float(num_real_data + num_fake_data)
+    pfake = 1 - preal
+    pwordr = get_prob_words_given_C(words_counts, 1, num_real_data, m, p)
+    pwordf = get_prob_words_given_C(words_counts, 0, num_fake_data, m, p)
+    prediction = get_C(preal, pfake, pwordr, pwordf, sets)
+    validating_accuracy = np.sum(prediction == np.array(expect)) / float(len(expect))
+    return validating_accuracy
 
 
-def get_performance(sets, expect, m, p,validating,validating_expect):
-    words_c = words_count(validating, validating_expect)
-    results = []
-    for line in sets:
-        results.append(predict(line, words_c, expect.count(1), expect.count(0), m, p))
-    return np.sum(np.array(results) == np.array(expect)) / (len(expect) * 1.0)
+def find_m_p(sets, expect, expected, training):
+    ms = []
+    ps = []
+    params = []
+    accuracy = []
+    for m in ms:
+        for p in ps:
+            validating_accuracy = train(sets, expect, m, p, expected, training)
+            params.append((m, p))
+            accuracy.append(validating_accuracy)
+    return params, accuracy
+
+
+def get_performance(sets, expect, m, p, expected, training):
+    words_counts = words_count(training, expected[0])
+    num_real_data = expected[0].count(1)
+    num_fake_data = expected[0].count(0)
+    preal = num_real_data / float(num_real_data + num_fake_data)
+    pfake = 1 - preal
+    pwordr = get_prob_words_given_C(words_counts, 1, num_real_data, m, p)
+    pwordf = get_prob_words_given_C(words_counts, 0, num_fake_data, m, p)
+    prediction = get_C(preal, pfake, pwordr, pwordf, sets)
+    accuracy = np.sum(prediction == np.array(expect)) / float(len(expect))
+    return accuracy
 
 
 if __name__ == '__main__':
     training, validating, testing, allset, expected = generate_sets()
     topwords, all_words = top_words(allset, expected[3])
-    print(topwords)
+    print("===================part1===================")
+    i = 1
+    for w in topwords:
+        print('Top{} word: '.format(i), w)
+        print('appearance in fake:', all_words[w][0])
+        print('appearance in real:', all_words[w][1])
+        i += 1
     m = 1.0
-    p = 0.05
-    print(get_performance(validating, expected[1], m, p,validating, expected[1]))
-    print(get_performance(testing, expected[2], m, p,validating, expected[1]))
-    # print(get_performance(training, expected[0], m, p))
-    # print(get_performance(allset, expected[3], m, p))
+    p = 0.1
+    print("===================part2===================")
+    print('training accuracy:', get_performance(training, expected[0], m, p, expected, training))
+    print('validating accuracy:', get_performance(validating, expected[1], m, p, expected, training))
+    print('testing accuracy:', get_performance(testing, expected[2], m, p, expected, training))

@@ -213,7 +213,7 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
     pnwordr = pwordr.copy()
     sum_pnwordr = math.exp(sum([item for key, item in pwordr.items()]))
     for key, item in pnwordr.items():
-        pnwordr[key] = sum_pnwordr - math.exp(pnwordr[key])
+        pnwordr[key] = math.log(sum_pnwordr - math.exp(pnwordr[key]))
 
     # pnwordr = get_prob_words_not_given_C(words_counts, 1, num_real_data, m, p)
 
@@ -221,7 +221,8 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
     pnwordf = pwordf.copy()
     sum_pnwordf = math.exp(sum([item for key, item in pwordf.items()]))
     for key, item in pnwordf.items():
-        pnwordf[key] = sum_pnwordf - math.exp(pnwordf[key])
+        pnwordf[key] = math.log(sum_pnwordf - math.exp(pnwordf[key]))
+
     # for key in pnwordf.keys():
     #     temp = math.exp(pnwordf[key])
     #     pnwordf[key] = math.log(1 - temp)

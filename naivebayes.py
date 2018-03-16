@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
 set_order = {'training': 0, 'validating': 1, 'testing': 2, 'all': 3}
 word_pos_neg = {'real': 1, 'fake': 0}
@@ -169,6 +170,48 @@ def get_performance(sets, expect, m, p, expected, training):
     return accuracy
 
 
+def part3a_help(preal, pfake, pwordr, pwordf, sets):
+    Cfake = np.array([np.log(pfake) + get_log_sums(log_prob_of_hl_given_C(pwordf, hl)) for hl in sets])
+    Creal = np.array([np.log(preal) + get_log_sums(log_prob_of_hl_given_C(pwordr, hl)) for hl in sets])
+    return Cfake, Creal
+
+
+def part3a(p_fake, p_real, sets, m, p, expected, training):
+    '''
+    :param sets: list of words
+    :param expect:
+    :param m:
+    :param p:
+    :param expected:
+    :param training:
+    :return: dictionary P(real | word) and P(fake | word) for words.
+    '''
+
+    words_counts = words_count(training, expected[0])
+    num_real_data = expected[0].count(1)
+    num_fake_data = expected[0].count(0)
+
+    # P(real)
+    preal = num_real_data / float(num_real_data + num_fake_data)
+    # P(fake)
+    pfake = 1 - preal
+    # P(word | real)
+    pwordr = get_prob_words_given_C(words_counts, 1, num_real_data, m, p)
+    # P(word | fake)
+    pwordf = get_prob_words_given_C(words_counts, 0, num_fake_data, m, p)
+
+    # P(real | word) = P(word | real) P(real) / P(word)
+    # P(fake | word) = P(word | fake) P(fake) / P(word)
+
+    for the_word in sets:
+        Cfake, Creal = part3a_help(preal, pfake, pwordr, pwordf, [the_word])
+        p_real[the_word] = Creal[0]
+        p_fake[the_word] = Cfake[0]
+        # print ('getting p_real and p_fake for word', the_word)
+
+    return p_fake, p_real
+
+
 if __name__ == '__main__':
     training, validating, testing, allset, expected = generate_sets()
     topwords, all_words = top_words(allset, expected[3])
@@ -205,19 +248,19 @@ if __name__ == '__main__':
 
 
     print ("===================part3===================")
-
+    p_real = {}
+    p_fake = {}
     # P(real) and P(fake)
-    p_real = None
-    p_fake = None
-    num_real = 0
-    num_fake = 0
-    for key in all_words.keys():
-        num_real += all_words[key][1]
-        num_fake += all_words[key][0]
 
-    num_total = num_real + num_fake
-    p_real = num_real / num_total
-    p_fake = 1 - p_real
+    word_set = [word for word in all_words.keys()]
+    p_fake, p_real = part3a(p_fake, p_real, word_set, m, p, expected, training)
+
+    print ("List the 10 words whose presence most strongly predicts that the news is real.")
+    print (sorted(p_real, key=p_real.get, reverse=True)[:10])
+    print ("List the 10 words whose absence most strongly predicts that the news is real.")
+    print (sorted(p_real, key=p_real.get, reverse=True)[-10:])
+    print ("List the 10 words whose presence most strongly predicts that the news is fake.")
+
 
 
     # 10 presence most predict real

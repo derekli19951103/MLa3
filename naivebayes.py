@@ -2,6 +2,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+import math
 
 set_order = {'training': 0, 'validating': 1, 'testing': 2, 'all': 3}
 word_pos_neg = {'real': 1, 'fake': 0}
@@ -209,9 +210,22 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
     pwordf = get_prob_words_given_C(words_counts, 0, num_fake_data, m, p)
 
     # P(not word | real)
-    pnwordr = get_prob_words_not_given_C(words_counts, 1, num_real_data, m, p)
+    pnwordr = pwordr.copy()
+    sum_pnwordr = math.exp(sum([item for key, item in pwordr.items()]))
+    for key, item in pnwordr.items():
+        pnwordr[key] = sum_pnwordr - math.exp(pnwordr[key])
+
+    # pnwordr = get_prob_words_not_given_C(words_counts, 1, num_real_data, m, p)
+
     # P(not word | fake)
-    pnwordf = get_prob_words_not_given_C(words_counts, 0, num_fake_data, m, p)
+    pnwordf = pwordf.copy()
+    sum_pnwordf = math.exp(sum([item for key, item in pwordf.items()]))
+    for key, item in pnwordf.items():
+        pnwordf[key] = sum_pnwordf - math.exp(pnwordf[key])
+    # for key in pnwordf.keys():
+    #     temp = math.exp(pnwordf[key])
+    #     pnwordf[key] = math.log(1 - temp)
+    # pnwordf = get_prob_words_not_given_C(words_counts, 0, num_fake_data, m, p)
 
     for the_word in sets:
         Cfake, Creal = part3a_help(preal, pfake, pwordr, pwordf, [the_word])
@@ -286,17 +300,16 @@ if __name__ == '__main__':
     print ("P(fake | not word)")
     print (sorted(p_fake_nw, key=p_fake_nw.get, reverse=True)[:10])
 
+    nonstop_p_real_w = p_real_w.copy()
+    nonstop_p_fake_w = p_fake_w.copy()
 
-
-    # 10 presence most predict real
-    # P(real | word) = P(word | real) P(real) / P(word)
-
-
-    # 10 absence most predict real
-    # P(real | not word) = P(not word | real) P(real) / P(word)
-
-    # 10 presence most predict fake
-    # P(fake | word) = P(word | fake) P(fake) / P(word)
-
-    # 10 absence most predict fake
-    # P(fake | not word) = P(not word | fake) P(fake) / P(word)
+    for word in ENGLISH_STOP_WORDS:
+        if word in nonstop_p_real_w.keys():
+            nonstop_p_real_w.pop(word)
+        if word in nonstop_p_fake_w.keys():
+            nonstop_p_fake_w.pop(word)
+    print ("****************************")
+    print ("P(real | word) in Non-stop word")
+    print (sorted(nonstop_p_real_w, key=nonstop_p_real_w.get, reverse=True)[:10])
+    print ("P(fake | word) in Non-stop word")
+    print (sorted(nonstop_p_fake_w, key=nonstop_p_fake_w.get, reverse=True)[:10])

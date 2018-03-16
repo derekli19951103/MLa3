@@ -175,8 +175,16 @@ def part3a_help(preal, pfake, pwordr, pwordf, sets):
     Creal = np.array([np.log(preal) + get_log_sums(log_prob_of_hl_given_C(pwordr, hl)) for hl in sets])
     return Cfake, Creal
 
+def get_prob_words_not_given_C(words_counts, C, num_C, m, p):
+    xi_c = {}
+    total_count=np.sum([v for v in words_counts.values()])
+    for word, count in words_counts.items():
+        xi_c[word] = (min(total_count-count[C], num_C) + m * p) / (num_C + m)
 
-def part3a(p_fake, p_real, sets, m, p, expected, training):
+    return xi_c
+
+
+def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training):
     '''
     :param sets: list of words
     :param expect:
@@ -200,16 +208,28 @@ def part3a(p_fake, p_real, sets, m, p, expected, training):
     # P(word | fake)
     pwordf = get_prob_words_given_C(words_counts, 0, num_fake_data, m, p)
 
-    # P(real | word) = P(word | real) P(real) / P(word)
-    # P(fake | word) = P(word | fake) P(fake) / P(word)
+    # P(not word | real)
+    pnwordr = get_prob_words_not_given_C(words_counts, 1, num_real_data, m, p)
+    # P(not word | fake)
+    pnwordf = get_prob_words_not_given_C(words_counts, 0, num_fake_data, m, p)
 
     for the_word in sets:
         Cfake, Creal = part3a_help(preal, pfake, pwordr, pwordf, [the_word])
-        p_real[the_word] = Creal[0]
-        p_fake[the_word] = Cfake[0]
-        # print ('getting p_real and p_fake for word', the_word)
+        # P(fake | word)
+        p_fake_w[the_word] = Cfake[0]
+        # P(real | word)
+        p_real_w[the_word] = Creal[0]
 
-    return p_fake, p_real
+        Cfaken, Crealn = part3a_help(preal, pfake, pnwordr, pnwordf, [the_word])
+        # P(real | not word)
+        p_fake_nw[the_word] = Cfaken[0]
+        # P(fake | not word)
+        p_real_nw[the_word] = Crealn[0]
+
+    # P(real | not word) = P(not word | real) P(real) / P(word)
+
+
+    return p_fake, p_real, p_fake_nw, p_real_nw
 
 
 if __name__ == '__main__':
@@ -248,18 +268,23 @@ if __name__ == '__main__':
 
 
     print ("===================part3===================")
-    p_real = {}
-    p_fake = {}
+    p_real_w = {}
+    p_fake_w = {}
+    p_real_nw = {}
+    p_fake_nw = {}
     # P(real) and P(fake)
 
-    word_set = [word for word in all_words.keys()]
-    p_fake, p_real = part3a(p_fake, p_real, word_set, m, p, expected, training)
+    word_set = [word for word in get_words(training).keys()]
+    p_fake_w, p_real_w, p_fake_nw, p_real_nw = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p, expected, training)
 
-    print ("List the 10 words whose presence most strongly predicts that the news is real.")
-    print (sorted(p_real, key=p_real.get, reverse=True)[:10])
-    print ("List the 10 words whose absence most strongly predicts that the news is real.")
-    print (sorted(p_real, key=p_real.get, reverse=True)[-10:])
-    print ("List the 10 words whose presence most strongly predicts that the news is fake.")
+    print ("P(real | word)")
+    print (sorted(p_real_w, key=p_real_w.get, reverse=True)[:10])
+    print ("P(real | not word).")
+    print (sorted(p_real_nw, key=p_real_nw.get, reverse=True)[:10])
+    print ("P(fake | word)")
+    print (sorted(p_fake_w, key=p_fake_w.get, reverse=True)[:10])
+    print ("P(fake | not word)")
+    print (sorted(p_fake_nw, key=p_fake_nw.get, reverse=True)[:10])
 
 
 

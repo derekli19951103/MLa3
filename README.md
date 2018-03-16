@@ -1,4 +1,8 @@
 # MLa3
+part 4 regularization:
+============Trained using training set, test using testing set============
+L2 Regularization accuracy: 0.828220858896
+L1 Regularization accuracy: 0.820040899796
 part 6ab:
 For real news:
 top 10 positive theta: ['trumps', 'turnbull', 'us', 'trump', 'says', 'donald', 'korea', 'debate', 'north', 'ban']

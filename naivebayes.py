@@ -3,6 +3,7 @@ import random
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 import math
+import _pickle as pickle
 
 set_order = {'training': 0, 'validating': 1, 'testing': 2, 'all': 3}
 word_pos_neg = {'real': 1, 'fake': 0}

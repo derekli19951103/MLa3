@@ -5,6 +5,55 @@ import numpy as np
 import matplotlib.pyplot as plt
 import graphviz
 from subprocess import call
+import pickle
+
+
+def p_word(sets):
+    all_words = get_words(sets)
+    for i in range(len(sets)):
+        for word in sets[i].strip().split():
+            all_words[word] += 1.0
+    sum_count = sum([v for v in all_words.values()])
+    for w, c in all_words.items():
+        all_words[w] = (1.0 * all_words[w]) / sum_count
+    return all_words
+
+
+def get_probability(prob_dict):
+    for w, p in prob_dict.items():
+        prob_dict[w] = np.exp(p)
+    return prob_dict
+
+
+def get_entropy(prob_dict):
+    entropy_dict = {}
+    for w, p in prob_dict.items():
+        entropy_dict[w] = -prob_dict[w] * np.log2(prob_dict[w])
+    return entropy_dict
+
+
+def get_conditional_entropy(cond_prob_dict, p_C):
+    cond_prob = get_probability(cond_prob_dict)
+    entropy_of_cond = get_entropy(cond_prob)
+    cond_entropy_dict = {}
+    for w, e in entropy_of_cond.items():
+        cond_prob_dict[w] = p_C * entropy_of_cond[w]
+    return cond_entropy_dict
+
+
+def mutual_information(sets, lpwr, lpwf, preal, pfake):
+    irw = {}
+    ifw = {}
+    word_prob_dict = p_word(sets)
+    hw = get_entropy(word_prob_dict)
+    pfw = get_probability(lpwf)
+    prw = get_probability(lpwr)
+    hwf = get_conditional_entropy(pfw, pfake)
+    hwr = get_conditional_entropy(prw, preal)
+    for w, h in hw.items():
+        irw[w] = hw[w] - hwr[w]
+        ifw[w] = hw[w] - hwf[w]
+    return irw, ifw
 
 
 def generate_x_y(setnum):
@@ -32,11 +81,17 @@ def generate_x_y(setnum):
         words_dict = all_words.copy()
     y = np.array(expected[setnum]).reshape((len(expected[setnum]), 1))
     x = x.T
-    return x, y,words_order
+    return x, y, words_order
 
 
 def train(x, y, maxdepth, split):
-    clf = tree.DecisionTreeClassifier(splitter=split, presort=True, max_depth=maxdepth,criterion='entropy')
+    clf = tree.DecisionTreeClassifier(splitter=split, presort=True, max_depth=maxdepth, criterion='entropy')
+    clf = clf.fit(x, y)
+    return clf
+
+
+def random_train_top(x, y, maxweights):
+    clf = tree.DecisionTreeClassifier(splitter='random', max_depth=1, criterion='entropy', max_features=maxweights)
     clf = clf.fit(x, y)
     return clf
 
@@ -47,8 +102,9 @@ def predict(clf, x, y):
 
 
 if __name__ == "__main__":
-    train_x, train_y ,words_order= generate_x_y(0)
-    val_x, val_y ,_= generate_x_y(1)
+    print("======================part7======================")
+    train_x, train_y, words_order = generate_x_y(0)
+    val_x, val_y, _ = generate_x_y(1)
     # depth = []
     # for d in range(100, train_x.shape[0], 100):
     #     depth.append(d)
@@ -92,7 +148,15 @@ if __name__ == "__main__":
     # plt.savefig("part7a.jpg")
     # plt.gca().clear()
     # print('performances saved')
-    clf = train(train_x, train_y, 200, 'best')
-    tree.export_graphviz(clf, out_file='tree.dot', feature_names=words_order,max_depth=3)
-    call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png'])
-
+    # clf = train(train_x, train_y, 200, 'best')
+    # tree.export_graphviz(clf, out_file='tree.dot', feature_names=words_order, max_depth=3,class_names=['fake','real'])
+    # call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png'])
+    print("======================part8======================")
+    clf = random_train_top(train_x, train_y, 100)
+    tree.export_graphviz(clf, out_file='tree0.dot', feature_names=words_order, max_depth=1,
+                         class_names=['fake', 'real'])
+    call(['dot', '-Tpng', 'tree0.dot', '-o', 'tree0.png'])
+    clf = random_train_top(train_x, train_y, 100)
+    tree.export_graphviz(clf, out_file='tree1.dot', feature_names=words_order, max_depth=1,
+                         class_names=['fake', 'real'])
+    call(['dot', '-Tpng', 'tree1.dot', '-o', 'tree1.png'])

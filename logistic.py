@@ -154,21 +154,21 @@ def predict(model, x, y):
 
 
 def theta_dict(model, words_order):
-    positve_thetas = {}
-    negative_thetas = {}
+    real_thetas = {}
+    fake_thetas = {}
     thetas = np.array([t.data.numpy() for t in model.parameters()])[0]
     thetas = thetas.T
     i = 0
     for w in words_order:
-        positve_thetas[w] = thetas[i, 0]
-        negative_thetas[w] = thetas[i, 1]
+        real_thetas[w] = thetas[i, 0]
+        fake_thetas[w] = thetas[i, 1]
         i += 1
-    return positve_thetas, negative_thetas
+    return real_thetas, fake_thetas
 
 
 if __name__ == '__main__':
-    print("==================part1====================")
     x, y, words_order = generate_x_y(0)
+    print("==================part1====================")
     model_l2 = build_model(x.shape[0], y.shape[0])
     train = []
     validate = []
@@ -209,30 +209,32 @@ if __name__ == '__main__':
     print('L1 Regularization accuracy:', predY_l1)
 
     print("==================part3====================")
-    positve_thetas, negative_thetas = theta_dict(model_l2, words_order)
+    model_l2 = build_model(x.shape[0], y.shape[0])
+    model_l2 = train_l2(model_l2, x, y, 200)
+    real_thetas, fake_thetas = theta_dict(model_l2, words_order)
     print('For real news:')
-    r_strong = sorted(positve_thetas, key=positve_thetas.get, reverse=True)[:10]
-    r_weak = sorted(positve_thetas, key=positve_thetas.get, reverse=False)[:10]
+    r_strong = sorted(real_thetas, key=real_thetas.get, reverse=True)[:10]
+    r_weak = sorted(real_thetas, key=real_thetas.get, reverse=False)[:10]
     print("top 10 positive theta:", r_strong)
     print("top 10 negative theta:", r_weak)
     print('For fake news:')
-    f_strong = sorted(negative_thetas, key=negative_thetas.get, reverse=True)[:10]
-    f_weak = sorted(negative_thetas, key=negative_thetas.get, reverse=False)[:10]
-    print("top 10 positive theta:", r_strong)
-    print("top 10 negative theta:", r_weak)
+    f_strong = sorted(fake_thetas, key=fake_thetas.get, reverse=True)[:10]
+    f_weak = sorted(fake_thetas, key=fake_thetas.get, reverse=False)[:10]
+    print("top 10 positive theta:", f_strong)
+    print("top 10 negative theta:", f_weak)
     for word in ENGLISH_STOP_WORDS:
-        if word in positve_thetas.keys():
-            positve_thetas.pop(word)
-        if word in negative_thetas.keys():
-            negative_thetas.pop(word)
+        if word in real_thetas.keys():
+            real_thetas.pop(word)
+        if word in fake_thetas.keys():
+            fake_thetas.pop(word)
     print("~~~~~~~~~~~~~~~After pruning stopwords~~~~~~~~~~~~~~~")
     print('For real news:')
-    r_strong = sorted(positve_thetas, key=positve_thetas.get, reverse=True)[:10]
-    r_weak = sorted(positve_thetas, key=positve_thetas.get, reverse=False)[:10]
+    r_strong = sorted(real_thetas, key=real_thetas.get, reverse=True)[:10]
+    r_weak = sorted(real_thetas, key=real_thetas.get, reverse=False)[:10]
     print("top 10 positive theta:", r_strong)
     print("top 10 negative theta:", r_weak)
     print('For fake news:')
-    f_strong = sorted(negative_thetas, key=negative_thetas.get, reverse=True)[:10]
-    f_weak = sorted(negative_thetas, key=negative_thetas.get, reverse=False)[:10]
-    print("top 10 positive theta:", r_strong)
-    print("top 10 negative theta:", r_weak)
+    f_strong = sorted(fake_thetas, key=fake_thetas.get, reverse=True)[:10]
+    f_weak = sorted(fake_thetas, key=fake_thetas.get, reverse=False)[:10]
+    print("top 10 positive theta:", f_strong)
+    print("top 10 negative theta:", f_weak)

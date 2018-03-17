@@ -14,15 +14,15 @@ size/parameter inverse relation
 
 part 6ab:
 For real news:
-top 10 positive theta: ['trumps', 'turnbull', 'us', 'trump', 'says', 'donald', 'korea', 'debate', 'north', 'ban']
-top 10 negative theta: ['hillary', 'watch', 'breaking', 'just', 'america', 'victory', 'new', 'are', 'the', 'they']
+top 10 positive theta: ['trumps', 'turnbull', 'trump', 'us', 'says', 'donald', 'korea', 'debate', 'ban', 'north']
+top 10 negative theta: ['hillary', 'breaking', 'watch', 'just', 'america', 'victory', 'new', 'are', 'they', 'the']
 For fake news:
-top 10 positive theta: ['trumps', 'turnbull', 'us', 'trump', 'says', 'donald', 'korea', 'debate', 'north', 'ban']
-top 10 negative theta: ['hillary', 'watch', 'breaking', 'just', 'america', 'victory', 'new', 'are', 'the', 'they']
+top 10 positive theta: ['hillary', 'breaking', 'watch', 'just', 'america', 'victory', 'new', 'are', 'they', 'the']
+top 10 negative theta: ['trumps', 'turnbull', 'trump', 'us', 'says', 'donald', 'korea', 'debate', 'ban', 'north']
 ~~~~~~~~~~~~~~~After pruning stopwords~~~~~~~~~~~~~~~
 For real news:
-top 10 positive theta: ['trumps', 'turnbull', 'trump', 'says', 'donald', 'korea', 'debate', 'north', 'ban', 'comey']
-top 10 negative theta: ['hillary', 'watch', 'breaking', 'just', 'america', 'victory', 'new', 'voter', 'star', 'supporter']
+top 10 positive theta: ['trumps', 'turnbull', 'trump', 'says', 'donald', 'korea', 'debate', 'ban', 'north', 'comey']
+top 10 negative theta: ['hillary', 'breaking', 'watch', 'just', 'america', 'victory', 'new', 'voter', 'star', 'supporter']
 For fake news:
-top 10 positive theta: ['trumps', 'turnbull', 'trump', 'says', 'donald', 'korea', 'debate', 'north', 'ban', 'comey']
-top 10 negative theta: ['hillary', 'watch', 'breaking', 'just', 'america', 'victory', 'new', 'voter', 'star', 'supporter']
+top 10 positive theta: ['hillary', 'breaking', 'watch', 'just', 'america', 'victory', 'new', 'star', 'voter', 'supporter']
+top 10 negative theta: ['trumps', 'turnbull', 'trump', 'says', 'donald', 'korea', 'debate', 'ban', 'north', 'comey']

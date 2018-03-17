@@ -212,20 +212,12 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
     sum_pnwordr = sum([item for key, item in pwordr.items()])
     for key, item in pnwordr.items():
         pnwordr[key] = sum_pnwordr - pnwordr[key]
-        # print(sum_pnwordr - pnwordr[key])
-
-    # pnwordr = get_prob_words_not_given_C(words_counts, 1, num_real_data, m, p)
 
     # P(not word | fake)
     pnwordf = pwordf.copy()
     sum_pnwordf = sum([item for key, item in pwordf.items()])
     for key, item in pnwordf.items():
         pnwordf[key] = sum_pnwordf - pnwordf[key]
-
-    # for key in pnwordf.keys():
-    #     temp = math.exp(pnwordf[key])
-    #     pnwordf[key] = math.log(1 - temp)
-    # pnwordf = get_prob_words_not_given_C(words_counts, 0, num_fake_data, m, p)
 
     for the_word in sets:
         Cfake, Creal = get_C_word(preal, pfake, pwordr, pwordf, [the_word])
@@ -240,10 +232,7 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
         # P(fake | not word)
         p_real_nw[the_word] = Crealn[0]
 
-    # P(real | not word) = P(not word | real) P(real) / P(word)
-
-
-    return p_fake, p_real, p_fake_nw, p_real_nw
+    return p_fake, p_real, p_fake_nw, p_real_nw, pwordr, pwordf
 
 
 if __name__ == '__main__':
@@ -289,8 +278,10 @@ if __name__ == '__main__':
     # P(real) and P(fake)
 
     word_set = [word for word in get_words(training).keys()]
-    p_fake_w, p_real_w, p_fake_nw, p_real_nw = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p,
+    p_fake_w, p_real_w, p_fake_nw, p_real_nw, pwordr, pwordf = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p,
                                                       expected, training)
+    pickle.dump(pwordr, open("part3_pwordr.pkl", "wb"))
+    pickle.dump(pwordf, open("part3_pwordf.pkl", "wb"))
 
     print("P(real | word)")
     print(sorted(p_real_w, key=p_real_w.get, reverse=True)[:10])

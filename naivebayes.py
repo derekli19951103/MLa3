@@ -233,7 +233,7 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
         # P(fake | not word)
         p_real_nw[the_word] = Crealn[0]
 
-    return p_fake, p_real, p_fake_nw, p_real_nw, pwordr, pwordf
+    return p_fake, p_real, p_fake_nw, p_real_nw
 
 
 if __name__ == '__main__':
@@ -279,10 +279,10 @@ if __name__ == '__main__':
     # P(real) and P(fake)
 
     word_set = [word for word in get_words(training).keys()]
-    p_fake_w, p_real_w, p_fake_nw, p_real_nw, pwordr, pwordf = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p,
+    p_fake_w, p_real_w, p_fake_nw, p_real_nw = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p,
                                                       expected, training)
-    pickle.dump(pwordr, open("part3_pwordr.pkl", "wb"))
-    pickle.dump(pwordf, open("part3_pwordf.pkl", "wb"))
+    # pickle.dump(pwordr, open("part3_pwordr.pkl", "wb"))
+    # pickle.dump(pwordf, open("part3_pwordf.pkl", "wb"))
 
     print("P(real | word)")
     print(sorted(p_real_w, key=p_real_w.get, reverse=True)[:10])

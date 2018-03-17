@@ -171,18 +171,16 @@ def get_performance(sets, expect, m, p, expected, training):
     return accuracy
 
 
-def part3a_help(preal, pfake, pwordr, pwordf, sets):
+def get_C_word(preal, pfake, pwordr, pwordf, sets):
     Cfake = np.array([np.log(pfake) + get_log_sums(log_prob_of_hl_given_C(pwordf, hl)) for hl in sets])
     Creal = np.array([np.log(preal) + get_log_sums(log_prob_of_hl_given_C(pwordr, hl)) for hl in sets])
     return Cfake, Creal
 
-def get_prob_words_not_given_C(words_counts, C, num_C, m, p):
-    xi_c = {}
-    total_count=np.sum([v for v in words_counts.values()])
-    for word, count in words_counts.items():
-        xi_c[word] = (min(total_count-count[C], num_C) + m * p) / (num_C + m)
 
-    return xi_c
+def get_C_nonword(preal, pfake, pwordr, pwordf, sets):
+    Cfake = np.array([np.log(pfake) + pwordf[hl] for hl in sets])
+    Creal = np.array([np.log(preal) + pwordr[hl] for hl in sets])
+    return Cfake, Creal
 
 
 def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training):
@@ -211,17 +209,18 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
 
     # P(not word | real)
     pnwordr = pwordr.copy()
-    sum_pnwordr = math.exp(sum([item for key, item in pwordr.items()]))
+    sum_pnwordr = sum([item for key, item in pwordr.items()])
     for key, item in pnwordr.items():
-        pnwordr[key] = math.log(sum_pnwordr - math.exp(pnwordr[key]))
+        pnwordr[key] = sum_pnwordr - pnwordr[key]
+        # print(sum_pnwordr - pnwordr[key])
 
     # pnwordr = get_prob_words_not_given_C(words_counts, 1, num_real_data, m, p)
 
     # P(not word | fake)
     pnwordf = pwordf.copy()
-    sum_pnwordf = math.exp(sum([item for key, item in pwordf.items()]))
+    sum_pnwordf = sum([item for key, item in pwordf.items()])
     for key, item in pnwordf.items():
-        pnwordf[key] = math.log(sum_pnwordf - math.exp(pnwordf[key]))
+        pnwordf[key] = sum_pnwordf - pnwordf[key]
 
     # for key in pnwordf.keys():
     #     temp = math.exp(pnwordf[key])
@@ -229,13 +228,13 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
     # pnwordf = get_prob_words_not_given_C(words_counts, 0, num_fake_data, m, p)
 
     for the_word in sets:
-        Cfake, Creal = part3a_help(preal, pfake, pwordr, pwordf, [the_word])
+        Cfake, Creal = get_C_word(preal, pfake, pwordr, pwordf, [the_word])
         # P(fake | word)
         p_fake_w[the_word] = Cfake[0]
         # P(real | word)
         p_real_w[the_word] = Creal[0]
 
-        Cfaken, Crealn = part3a_help(preal, pfake, pnwordr, pnwordf, [the_word])
+        Cfaken, Crealn = get_C_nonword(preal, pfake, pnwordr, pnwordf, [the_word])
         # P(real | not word)
         p_fake_nw[the_word] = Cfaken[0]
         # P(fake | not word)
@@ -250,39 +249,39 @@ def part3a(p_fake, p_real, p_fake_nw, p_real_nw, sets, m, p, expected, training)
 if __name__ == '__main__':
     training, validating, testing, allset, expected = generate_sets()
     topwords, all_words = top_words(allset, expected[3])
-    print("===================part1===================")
-    i = 1
-    for w in topwords:
-        print('Top{} word: '.format(i), w)
-        print('appearance in fake:', all_words[w][0])
-        print('appearance in real:', all_words[w][1])
-        i += 1
-    print("===================part2===================")
-    # find mp
-    para, accu = find_m_p(validating, expected[1], expected, training)
-    x_axis = [i+1 for i in range(len(accu))]
-    plt.plot(x_axis, accu)
-    plt.title('Part 2')
-    plt.xlabel('M and P')
-    plt.ylabel("Performance")
-    plt.savefig("part2.jpg")
-    plt.close("all")
-
-    # print out mp set and its performance
-    for i in range(len(x_axis)):
-        print ("****************************")
-        print ("# of set: ", x_axis[i])
-        print ("M and P: ", para[i])
-        print ("Performance: ", accu[i])
+    # print("===================part1===================")
+    # i = 1
+    # for w in topwords:
+    #     print('Top{} word: '.format(i), w)
+    #     print('appearance in fake:', all_words[w][0])
+    #     print('appearance in real:', all_words[w][1])
+    #     i += 1
+    # print("===================part2===================")
+    # # find mp
+    # para, accu = find_m_p(validating, expected[1], expected, training)
+    # x_axis = [i+1 for i in range(len(accu))]
+    # plt.plot(x_axis, accu)
+    # plt.title('Part 2')
+    # plt.xlabel('M and P')
+    # plt.ylabel("Performance")
+    # plt.savefig("part2.jpg")
+    # plt.close("all")
+    #
+    # # print out mp set and its performance
+    # for i in range(len(x_axis)):
+    #     print ("****************************")
+    #     print ("# of set: ", x_axis[i])
+    #     print ("M and P: ", para[i])
+    #     print ("Performance: ", accu[i])
 
     m = 1.0
     p = 0.1
-    print('training accuracy:', get_performance(training, expected[0], m, p, expected, training))
-    print('validating accuracy:', get_performance(validating, expected[1], m, p, expected, training))
-    print('testing accuracy:', get_performance(testing, expected[2], m, p, expected, training))
+    # print('training accuracy:', get_performance(training, expected[0], m, p, expected, training))
+    # print('validating accuracy:', get_performance(validating, expected[1], m, p, expected, training))
+    # print('testing accuracy:', get_performance(testing, expected[2], m, p, expected, training))
 
 
-    print ("===================part3===================")
+    print("===================part3===================")
     p_real_w = {}
     p_fake_w = {}
     p_real_nw = {}
@@ -290,16 +289,17 @@ if __name__ == '__main__':
     # P(real) and P(fake)
 
     word_set = [word for word in get_words(training).keys()]
-    p_fake_w, p_real_w, p_fake_nw, p_real_nw = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p, expected, training)
+    p_fake_w, p_real_w, p_fake_nw, p_real_nw = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p,
+                                                      expected, training)
 
-    print ("P(real | word)")
-    print (sorted(p_real_w, key=p_real_w.get, reverse=True)[:10])
-    print ("P(real | not word).")
-    print (sorted(p_real_nw, key=p_real_nw.get, reverse=True)[:10])
-    print ("P(fake | word)")
-    print (sorted(p_fake_w, key=p_fake_w.get, reverse=True)[:10])
-    print ("P(fake | not word)")
-    print (sorted(p_fake_nw, key=p_fake_nw.get, reverse=True)[:10])
+    print("P(real | word)")
+    print(sorted(p_real_w, key=p_real_w.get, reverse=True)[:10])
+    print("P(real | not word).")
+    print(sorted(p_real_nw, key=p_real_nw.get, reverse=True)[:10])
+    print("P(fake | word)")
+    print(sorted(p_fake_w, key=p_fake_w.get, reverse=True)[:10])
+    print("P(fake | not word)")
+    print(sorted(p_fake_nw, key=p_fake_nw.get, reverse=True)[:10])
 
     nonstop_p_real_w = p_real_w.copy()
     nonstop_p_fake_w = p_fake_w.copy()
@@ -309,8 +309,8 @@ if __name__ == '__main__':
             nonstop_p_real_w.pop(word)
         if word in nonstop_p_fake_w.keys():
             nonstop_p_fake_w.pop(word)
-    print ("****************************")
-    print ("P(real | word) in Non-stop word")
-    print (sorted(nonstop_p_real_w, key=nonstop_p_real_w.get, reverse=True)[:10])
-    print ("P(fake | word) in Non-stop word")
-    print (sorted(nonstop_p_fake_w, key=nonstop_p_fake_w.get, reverse=True)[:10])
+    print("****************************")
+    print("P(real | word) in Non-stop word")
+    print(sorted(nonstop_p_real_w, key=nonstop_p_real_w.get, reverse=True)[:10])
+    print("P(fake | word) in Non-stop word")
+    print(sorted(nonstop_p_fake_w, key=nonstop_p_fake_w.get, reverse=True)[:10])

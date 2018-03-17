@@ -1,4 +1,9 @@
 # MLa3
+part7a splitter and maxdepth:
+best maxdepth for best splitter: 200
+its validating performance: 0.787755102041
+best maxdepth for random splitter: 400
+its validating performance: 0.779591836735
 part 4 regularization:
 ============Trained using training set, test using testing set============
 L2 Regularization accuracy: 0.828220858896

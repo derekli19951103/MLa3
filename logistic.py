@@ -168,73 +168,85 @@ def theta_dict(model, words_order):
 
 if __name__ == '__main__':
     x, y, words_order = generate_x_y(0)
-    print("==================part1====================")
-    model_l2 = build_model(x.shape[0], y.shape[0])
-    train = []
-    validate = []
-    test = []
-    for i in range(0, 500, 20):
-        model_l2 = train_l2(model_l2, x, y, i)
-        Y_l2 = predict(model_l2, x, y)
-        v_x, v_y, _ = generate_x_y(1)
-        v_Y_l2 = predict(model_l2, v_x, v_y)
-        t_x, t_y, _ = generate_x_y(2)
-        t_Y_l2 = predict(model_l2, t_x, t_y)
-        train.append(Y_l2)
-        validate.append(v_Y_l2)
-        test.append(t_Y_l2)
-        model_l2 = build_model(x.shape[0], y.shape[0])
+    # print("==================part1====================")
+    # model_l2 = build_model(x.shape[0], y.shape[0])
+    # train = []
+    # validate = []
+    # test = []
+    # for i in range(0, 500, 20):
+    #     model_l2 = train_l2(model_l2, x, y, i)
+    #     Y_l2 = predict(model_l2, x, y)
+    #     v_x, v_y, _ = generate_x_y(1)
+    #     v_Y_l2 = predict(model_l2, v_x, v_y)
+    #     t_x, t_y, _ = generate_x_y(2)
+    #     t_Y_l2 = predict(model_l2, t_x, t_y)
+    #     train.append(Y_l2)
+    #     validate.append(v_Y_l2)
+    #     test.append(t_Y_l2)
+    #     model_l2 = build_model(x.shape[0], y.shape[0])
+    #
+    # plt.step(range(0, 500, 20), train, label='Training set')
+    # plt.step(range(0, 500, 20), validate, label='Validating set')
+    # plt.step(range(0, 500, 20), test, label='Testing set')
+    # plt.title('Part 4')
+    # plt.xlabel('epochs')
+    # plt.ylabel("Performance")
+    # plt.legend()
+    # plt.savefig("part4.jpg")
+    # plt.gca().clear()
+    # print('learning curve saved')
+    #
+    # print("==================part2====================")
+    # model_l2 = build_model(x.shape[0], y.shape[0])
+    # model_l1 = build_model(x.shape[0], y.shape[0])
+    # model_l2 = train_l2(model_l2, x, y, 200)
+    # model_l1 = train_l1(model_l1, x, y, 200)
+    # x, y, _ = generate_x_y(2)
+    # predY_l2 = predict(model_l2, x, y)
+    # predY_l1 = predict(model_l1, x, y)
+    # print('============Trained using training set, test using testing set============')
+    # print('L2 Regularization accuracy:', predY_l2)
+    # print('L1 Regularization accuracy:', predY_l1)
+    #
+    # print("==================part3====================")
+    # model_l2 = build_model(x.shape[0], y.shape[0])
+    # model_l2 = train_l2(model_l2, x, y, 200)
+    # real_thetas, fake_thetas = theta_dict(model_l2, words_order)
+    # print('For real news:')
+    # r_strong = sorted(real_thetas, key=real_thetas.get, reverse=True)[:10]
+    # r_weak = sorted(real_thetas, key=real_thetas.get, reverse=False)[:10]
+    # print("top 10 positive theta:", r_strong)
+    # print("top 10 negative theta:", r_weak)
+    # print('For fake news:')
+    # f_strong = sorted(fake_thetas, key=fake_thetas.get, reverse=True)[:10]
+    # f_weak = sorted(fake_thetas, key=fake_thetas.get, reverse=False)[:10]
+    # print("top 10 positive theta:", f_strong)
+    # print("top 10 negative theta:", f_weak)
+    # for word in ENGLISH_STOP_WORDS:
+    #     if word in real_thetas.keys():
+    #         real_thetas.pop(word)
+    #     if word in fake_thetas.keys():
+    #         fake_thetas.pop(word)
+    # print("~~~~~~~~~~~~~~~After pruning stopwords~~~~~~~~~~~~~~~")
+    # print('For real news:')
+    # r_strong = sorted(real_thetas, key=real_thetas.get, reverse=True)[:10]
+    # r_weak = sorted(real_thetas, key=real_thetas.get, reverse=False)[:10]
+    # print("top 10 positive theta:", r_strong)
+    # print("top 10 negative theta:", r_weak)
+    # print('For fake news:')
+    # f_strong = sorted(fake_thetas, key=fake_thetas.get, reverse=True)[:10]
+    # f_weak = sorted(fake_thetas, key=fake_thetas.get, reverse=False)[:10]
+    # print("top 10 positive theta:", f_strong)
+    # print("top 10 negative theta:", f_weak)
 
-    plt.step(range(0, 500, 20), train, label='Training set')
-    plt.step(range(0, 500, 20), validate, label='Validating set')
-    plt.step(range(0, 500, 20), test, label='Testing set')
-    plt.title('Part 4')
-    plt.xlabel('epochs')
-    plt.ylabel("Performance")
-    plt.legend()
-    plt.savefig("part4.jpg")
-    plt.gca().clear()
-    print('learning curve saved')
-
-    print("==================part2====================")
+    print('logistic regression summary:')
     model_l2 = build_model(x.shape[0], y.shape[0])
-    model_l1 = build_model(x.shape[0], y.shape[0])
     model_l2 = train_l2(model_l2, x, y, 200)
-    model_l1 = train_l1(model_l1, x, y, 200)
-    x, y, _ = generate_x_y(2)
-    predY_l2 = predict(model_l2, x, y)
-    predY_l1 = predict(model_l1, x, y)
-    print('============Trained using training set, test using testing set============')
-    print('L2 Regularization accuracy:', predY_l2)
-    print('L1 Regularization accuracy:', predY_l1)
-
-    print("==================part3====================")
-    model_l2 = build_model(x.shape[0], y.shape[0])
-    model_l2 = train_l2(model_l2, x, y, 200)
-    real_thetas, fake_thetas = theta_dict(model_l2, words_order)
-    print('For real news:')
-    r_strong = sorted(real_thetas, key=real_thetas.get, reverse=True)[:10]
-    r_weak = sorted(real_thetas, key=real_thetas.get, reverse=False)[:10]
-    print("top 10 positive theta:", r_strong)
-    print("top 10 negative theta:", r_weak)
-    print('For fake news:')
-    f_strong = sorted(fake_thetas, key=fake_thetas.get, reverse=True)[:10]
-    f_weak = sorted(fake_thetas, key=fake_thetas.get, reverse=False)[:10]
-    print("top 10 positive theta:", f_strong)
-    print("top 10 negative theta:", f_weak)
-    for word in ENGLISH_STOP_WORDS:
-        if word in real_thetas.keys():
-            real_thetas.pop(word)
-        if word in fake_thetas.keys():
-            fake_thetas.pop(word)
-    print("~~~~~~~~~~~~~~~After pruning stopwords~~~~~~~~~~~~~~~")
-    print('For real news:')
-    r_strong = sorted(real_thetas, key=real_thetas.get, reverse=True)[:10]
-    r_weak = sorted(real_thetas, key=real_thetas.get, reverse=False)[:10]
-    print("top 10 positive theta:", r_strong)
-    print("top 10 negative theta:", r_weak)
-    print('For fake news:')
-    f_strong = sorted(fake_thetas, key=fake_thetas.get, reverse=True)[:10]
-    f_weak = sorted(fake_thetas, key=fake_thetas.get, reverse=False)[:10]
-    print("top 10 positive theta:", f_strong)
-    print("top 10 negative theta:", f_weak)
+    tr = predict(model_l2, x, y)
+    v_x, v_y, _ = generate_x_y(1)
+    v = predict(model_l2, v_x, v_y)
+    t_x, t_y, _ = generate_x_y(2)
+    te = predict(model_l2, t_x, t_y)
+    print('training accuracy:', tr)
+    print('validating accuracy:', v)
+    print('testing accuracy:', te)

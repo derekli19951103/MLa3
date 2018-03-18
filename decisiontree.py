@@ -90,7 +90,7 @@ def train(x, y, maxdepth, split):
 
 
 def random_train_top(x, y, maxweights):
-    clf = tree.DecisionTreeClassifier(splitter='random', max_depth=1, criterion='entropy', max_features=maxweights)
+    clf = tree.DecisionTreeClassifier(splitter='best', max_depth=1, criterion='entropy', max_features=maxweights)
     clf = clf.fit(x, y)
     return clf
 
@@ -101,55 +101,61 @@ def predict(clf, x, y):
 
 
 if __name__ == "__main__":
-    print("======================part7======================")
+    # print("======================part7======================")
     train_x, train_y, words_order = generate_x_y(0)
+    test_x, test_y, _ = generate_x_y(2)
     val_x, val_y, _ = generate_x_y(1)
-    depth = []
-    for d in range(100, train_x.shape[0], 100):
-        depth.append(d)
-    depth.append(train_x.shape[0])
-    t_performance = []
-    v_performance = []
-    for d in depth:
-        clf = train(train_x, train_y, d, 'best')
-        t_performance.append(predict(clf, train_x, train_y))
-        v_performance.append(predict(clf, val_x, val_y))
+    # depth = []
+    # for d in range(100, train_x.shape[0], 100):
+    #     depth.append(d)
+    # depth.append(train_x.shape[0])
+    # t_performance = []
+    # v_performance = []
+    # for d in depth:
+    #     clf = train(train_x, train_y, d, 'best')
+    #     t_performance.append(predict(clf, train_x, train_y))
+    #     v_performance.append(predict(clf, val_x, val_y))
+    #
+    # plt.subplot(1, 2, 1)
+    # plt.step(depth, t_performance, label='Training set')
+    # plt.step(depth, v_performance, label='Validating set')
+    # plt.title('Using best splitter')
+    # plt.xlabel('max depth')
+    # plt.ylabel("Performance")
+    # plt.legend()
+    # print('best maxdepth for best splitter:', depth[np.argmax(v_performance)])
+    # print('its validating performance:', v_performance[np.argmax(v_performance)])
+    #
+    # t_performance = []
+    # v_performance = []
+    # for d in depth:
+    #     clf = train(train_x, train_y, d, 'random')
+    #     t_performance.append(predict(clf, train_x, train_y))
+    #     v_performance.append(predict(clf, val_x, val_y))
+    #
+    # plt.subplot(1, 2, 2)
+    # plt.step(depth, t_performance, label='Training set')
+    # plt.step(depth, v_performance, label='Validating set')
+    # plt.title('Using random splitter')
+    # plt.xlabel('max depth')
+    # plt.ylabel("Performance")
+    # plt.legend()
+    #
+    # print('best maxdepth for random splitter:', depth[np.argmax(v_performance)])
+    # print('its validating performance:', v_performance[np.argmax(v_performance)])
+    #
+    # plt.suptitle('Part 7a')
+    # plt.savefig("part7a.jpg")
+    # plt.gca().clear()
+    # print('performances saved')
+    # clf = train(train_x, train_y, 200, 'best')
+    # tree.export_graphviz(clf, out_file='tree.dot', feature_names=words_order, max_depth=3, class_names=['fake', 'real'])
+    # call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png'])
 
-    plt.subplot(1, 2, 1)
-    plt.step(depth, t_performance, label='Training set')
-    plt.step(depth, v_performance, label='Validating set')
-    plt.title('Using best splitter')
-    plt.xlabel('max depth')
-    plt.ylabel("Performance")
-    plt.legend()
-    print('best maxdepth for best splitter:', depth[np.argmax(v_performance)])
-    print('its validating performance:', v_performance[np.argmax(v_performance)])
-
-    t_performance = []
-    v_performance = []
-    for d in depth:
-        clf = train(train_x, train_y, d, 'random')
-        t_performance.append(predict(clf, train_x, train_y))
-        v_performance.append(predict(clf, val_x, val_y))
-
-    plt.subplot(1, 2, 2)
-    plt.step(depth, t_performance, label='Training set')
-    plt.step(depth, v_performance, label='Validating set')
-    plt.title('Using random splitter')
-    plt.xlabel('max depth')
-    plt.ylabel("Performance")
-    plt.legend()
-
-    print('best maxdepth for random splitter:', depth[np.argmax(v_performance)])
-    print('its validating performance:', v_performance[np.argmax(v_performance)])
-
-    plt.suptitle('Part 7a')
-    plt.savefig("part7a.jpg")
-    plt.gca().clear()
-    print('performances saved')
-    clf = train(train_x, train_y, 200, 'best')
-    tree.export_graphviz(clf, out_file='tree.dot', feature_names=words_order, max_depth=3, class_names=['fake', 'real'])
-    call(['dot', '-Tpng', 'tree.dot', '-o', 'tree.png'])
+    # print('decision tree summary:')
+    # print('training accuracy:',predict(clf,train_x,train_y))
+    # print('validating accuracy:', predict(clf,val_x , val_y))
+    # print('testing accuracy:', predict(clf, test_x, test_y))
     print("======================part8======================")
     clf = random_train_top(train_x, train_y, 100)
     tree.export_graphviz(clf, out_file='tree0.dot', feature_names=words_order, max_depth=1,

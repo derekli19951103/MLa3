@@ -271,38 +271,46 @@ if __name__ == '__main__':
     # print('testing accuracy:', get_performance(testing, expected[2], m, p, expected, training))
 
 
-    print("===================part3===================")
-    p_real_w = {}
-    p_fake_w = {}
-    p_real_nw = {}
-    p_fake_nw = {}
-    # P(real) and P(fake)
+    # print("===================part3===================")
+    # p_real_w = {}
+    # p_fake_w = {}
+    # p_real_nw = {}
+    # p_fake_nw = {}
+    # # P(real) and P(fake)
+    #
+    # word_set = [word for word in get_words(training).keys()]
+    # p_fake_w, p_real_w, p_fake_nw, p_real_nw = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p,
+    #                                                   expected, training)
+    # # pickle.dump(pwordr, open("part3_pwordr.pkl", "wb"))
+    # # pickle.dump(pwordf, open("part3_pwordf.pkl", "wb"))
+    #
+    # print("P(real | word)")
+    # print(sorted(p_real_w, key=p_real_w.get, reverse=True)[:10])
+    # print("P(real | not word).")
+    # print(sorted(p_real_nw, key=p_real_nw.get, reverse=True)[:10])
+    # print("P(fake | word)")
+    # print(sorted(p_fake_w, key=p_fake_w.get, reverse=True)[:10])
+    # print("P(fake | not word)")
+    # print(sorted(p_fake_nw, key=p_fake_nw.get, reverse=True)[:10])
+    #
+    # nonstop_p_real_w = p_real_w.copy()
+    # nonstop_p_fake_w = p_fake_w.copy()
+    #
+    # for word in ENGLISH_STOP_WORDS:
+    #     if word in nonstop_p_real_w.keys():
+    #         nonstop_p_real_w.pop(word)
+    #     if word in nonstop_p_fake_w.keys():
+    #         nonstop_p_fake_w.pop(word)
+    # print("****************************")
+    # print("P(real | word) in Non-stop word")
+    # print(sorted(nonstop_p_real_w, key=nonstop_p_real_w.get, reverse=True)[:10])
+    # print("P(fake | word) in Non-stop word")
+    # print(sorted(nonstop_p_fake_w, key=nonstop_p_fake_w.get, reverse=True)[:10])
 
-    word_set = [word for word in get_words(training).keys()]
-    p_fake_w, p_real_w, p_fake_nw, p_real_nw = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p,
-                                                      expected, training)
-    # pickle.dump(pwordr, open("part3_pwordr.pkl", "wb"))
-    # pickle.dump(pwordf, open("part3_pwordf.pkl", "wb"))
-
-    print("P(real | word)")
-    print(sorted(p_real_w, key=p_real_w.get, reverse=True)[:10])
-    print("P(real | not word).")
-    print(sorted(p_real_nw, key=p_real_nw.get, reverse=True)[:10])
-    print("P(fake | word)")
-    print(sorted(p_fake_w, key=p_fake_w.get, reverse=True)[:10])
-    print("P(fake | not word)")
-    print(sorted(p_fake_nw, key=p_fake_nw.get, reverse=True)[:10])
-
-    nonstop_p_real_w = p_real_w.copy()
-    nonstop_p_fake_w = p_fake_w.copy()
-
-    for word in ENGLISH_STOP_WORDS:
-        if word in nonstop_p_real_w.keys():
-            nonstop_p_real_w.pop(word)
-        if word in nonstop_p_fake_w.keys():
-            nonstop_p_fake_w.pop(word)
-    print("****************************")
-    print("P(real | word) in Non-stop word")
-    print(sorted(nonstop_p_real_w, key=nonstop_p_real_w.get, reverse=True)[:10])
-    print("P(fake | word) in Non-stop word")
-    print(sorted(nonstop_p_fake_w, key=nonstop_p_fake_w.get, reverse=True)[:10])
+    print('naive bayes summary:')
+    tr=get_performance(training, expected[0], m, p, expected, training)
+    v = get_performance(validating, expected[1], m, p, expected, training)
+    te = get_performance(testing, expected[2], m, p, expected, training)
+    print('training accuracy:', tr)
+    print('validating accuracy:', v)
+    print('testing accuracy:', te)

@@ -246,7 +246,7 @@ if __name__ == '__main__':
     #     print('appearance in fake:', all_words[w][0])
     #     print('appearance in real:', all_words[w][1])
     #     i += 1
-    # print("===================part2===================")
+    print("===================part2===================")
     # # find mp
     # para, accu = find_m_p(validating, expected[1], expected, training)
     # x_axis = [i+1 for i in range(len(accu))]

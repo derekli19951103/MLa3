@@ -2,11 +2,14 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-import math
-import _pickle as pickle
 
 set_order = {'training': 0, 'validating': 1, 'testing': 2, 'all': 3}
 word_pos_neg = {'real': 1, 'fake': 0}
+top10_real = ['trump', 'donald', 'to', 'us', 'on', 'trumps', 'in', 'of', 'for', 'says']
+top10_fake = ['trump', 'the', 'to', 'in', 'donald', 'for', 'of', 'a', 'and', 'on']
+top10_real_nw = ['ron', 'neocons', 'watch', 'shameless', 'instantly', 'regrets', 'fleeing', 'dreams', 'secrecy',
+                 'faked']
+top10_fake_nw = ['glass', 'snl', 'skit', 'korea', 'awkward', 'handshakes', 'g20', 'agenda', 'scouts', 'aides']
 
 
 def get_lines():
@@ -147,8 +150,8 @@ def train(sets, expect, m, p, expected, training):
 
 
 def find_m_p(sets, expect, expected, training):
-    ms = [10.0, 1.0, 0.1]
-    ps = [10.0, 1.0, 0.1]
+    ms = [1.0, 2.0, 3.0]
+    ps = [0.05, 0.1]
     params = []
     accuracy = []
     for m in ms:
@@ -167,6 +170,38 @@ def get_performance(sets, expect, m, p, expected, training):
     pfake = 1 - preal
     pwordr = get_prob_words_given_C(words_counts, 1, num_real_data, m, p)
     pwordf = get_prob_words_given_C(words_counts, 0, num_fake_data, m, p)
+    prediction = get_C(preal, pfake, pwordr, pwordf, sets)
+    accuracy = np.sum(prediction == np.array(expect)) / float(len(expect))
+    return accuracy
+
+
+def get_performance_comparing(sets, expect, m, p, expected, training, p_or_a):
+    words_counts = words_count(training, expected[0])
+    num_real_data = expected[0].count(1)
+    num_fake_data = expected[0].count(0)
+    preal = num_real_data / float(num_real_data + num_fake_data)
+    pfake = 1 - preal
+    pwordr = get_prob_words_given_C(words_counts, 1, num_real_data, m, p)
+    pwordf = get_prob_words_given_C(words_counts, 0, num_fake_data, m, p)
+
+    # test part
+    if p_or_a == 'p':
+
+        for i in range(len(top10_real)):
+            pwordr[top10_real[i]] = pwordr[top10_real_nw[i]]
+
+        for i in range(len(top10_fake)):
+            pwordf[top10_fake[i]] = pwordf[top10_fake_nw[i]]
+
+    if p_or_a == 'a':
+
+        for i in range(len(top10_real)):
+            pwordr[top10_real_nw[i]] = pwordr[top10_real[i]]
+
+        for i in range(len(top10_fake)):
+            pwordf[top10_fake_nw[i]] = pwordf[top10_fake[i]]
+
+    # test part
     prediction = get_C(preal, pfake, pwordr, pwordf, sets)
     accuracy = np.sum(prediction == np.array(expect)) / float(len(expect))
     return accuracy
@@ -239,37 +274,42 @@ def part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, sets, m, p, expected, train
 if __name__ == '__main__':
     training, validating, testing, allset, expected = generate_sets()
     topwords, all_words = top_words(allset, expected[3])
-    # print("===================part1===================")
-    # i = 1
-    # for w in topwords:
-    #     print('Top{} word: '.format(i), w)
-    #     print('appearance in fake:', all_words[w][0])
-    #     print('appearance in real:', all_words[w][1])
-    #     i += 1
+    p_real_w = {}
+    p_fake_w = {}
+    p_real_nw = {}
+    p_fake_nw = {}
+    print("===================part1===================")
+    i = 1
+    for w in topwords:
+        print('Top{} word: '.format(i), w)
+        print('appearance in fake:', all_words[w][0])
+        print('appearance in real:', all_words[w][1])
+        i += 1
     print("===================part2===================")
-    # # find mp
-    # para, accu = find_m_p(validating, expected[1], expected, training)
-    # x_axis = [i+1 for i in range(len(accu))]
-    # plt.plot(x_axis, accu)
-    # plt.title('Part 2')
-    # plt.xlabel('M and P')
-    # plt.ylabel("Performance")
-    # plt.savefig("part2.jpg")
-    # plt.close("all")
-    #
-    # # print out mp set and its performance
-    # for i in range(len(x_axis)):
-    #     print ("****************************")
-    #     print ("# of set: ", x_axis[i])
-    #     print ("M and P: ", para[i])
-    #     print ("Performance: ", accu[i])
+    # find mp
+    para, accu = find_m_p(validating, expected[1], expected, training)
+    x_axis = [i + 1 for i in range(len(accu))]
+    plt.plot(x_axis, accu)
+    plt.title('Part 2')
+    plt.xlabel('M and P')
+    plt.ylabel("Performance")
+    plt.savefig("part2.jpg")
+    plt.close("all")
 
-    m = 1.0
+    # print out mp set and its performance
+    for i in range(len(x_axis)):
+        print("****************************")
+        print("# of set: ", x_axis[i])
+        print("M and P: ", para[i])
+        print("Performance: ", accu[i])
+    print("****************************")
+
+    m = 2.0
     p = 0.1
-    # print('training accuracy:', get_performance(training, expected[0], m, p, expected, training))
-    # print('validating accuracy:', get_performance(validating, expected[1], m, p, expected, training))
-    # print('testing accuracy:', get_performance(testing, expected[2], m, p, expected, training))
 
+    print('training accuracy:', get_performance(training, expected[0], m, p, expected, training))
+    print('validating accuracy:', get_performance(validating, expected[1], m, p, expected, training))
+    print('testing accuracy:', get_performance(testing, expected[2], m, p, expected, training))
 
     print("===================part3===================")
     p_real_w = {}
@@ -281,8 +321,6 @@ if __name__ == '__main__':
     word_set = [word for word in get_words(training).keys()]
     p_fake_w, p_real_w, p_fake_nw, p_real_nw = part3a(p_fake_w, p_real_w, p_fake_nw, p_real_nw, word_set, m, p,
                                                       expected, training)
-    # pickle.dump(pwordr, open("part3_pwordr.pkl", "wb"))
-    # pickle.dump(pwordf, open("part3_pwordf.pkl", "wb"))
 
     print("P(real | word)")
     print(sorted(p_real_w, key=p_real_w.get, reverse=True)[:10])
@@ -292,6 +330,17 @@ if __name__ == '__main__':
     print(sorted(p_fake_w, key=p_fake_w.get, reverse=True)[:10])
     print("P(fake | not word)")
     print(sorted(p_fake_nw, key=p_fake_nw.get, reverse=True)[:10])
+
+    # print("****************************")
+
+    print('presence->absence:')
+    print('training accuracy:', get_performance_comparing(training, expected[0], m, p, expected, training, 'p'))
+    print('validating accuracy:', get_performance_comparing(validating, expected[1], m, p, expected, training, 'p'))
+    print('testing accuracy:', get_performance_comparing(testing, expected[2], m, p, expected, training, 'p'))
+    print('absence->presence:')
+    print('training accuracy:', get_performance_comparing(training, expected[0], m, p, expected, training, 'a'))
+    print('validating accuracy:', get_performance_comparing(validating, expected[1], m, p, expected, training, 'a'))
+    print('testing accuracy:', get_performance_comparing(testing, expected[2], m, p, expected, training, 'a'))
 
     nonstop_p_real_w = p_real_w.copy()
     nonstop_p_fake_w = p_fake_w.copy()
@@ -308,7 +357,7 @@ if __name__ == '__main__':
     print(sorted(nonstop_p_fake_w, key=nonstop_p_fake_w.get, reverse=True)[:10])
 
     print('naive bayes summary:')
-    tr=get_performance(training, expected[0], m, p, expected, training)
+    tr = get_performance(training, expected[0], m, p, expected, training)
     v = get_performance(validating, expected[1], m, p, expected, training)
     te = get_performance(testing, expected[2], m, p, expected, training)
     print('training accuracy:', tr)
